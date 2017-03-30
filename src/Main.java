@@ -46,7 +46,6 @@ public class Main {
 
         try {
 
-            System.out.print("> ");
             input = CONSOLE.readLine();
 
         } catch(IOException ex) {

@@ -13,6 +13,14 @@ public class CommandHelper {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("MessagesBundle");
     private static final String DELIMITER_SPACE = " ";
 
+    public static final String COMMAND_CHANGE   = "change";
+    public static final String COMMAND_CHARGE   = "charge";
+    public static final String COMMAND_EXCHANGE = "exchange";
+    public static final String COMMAND_PUT      = "put";
+    public static final String COMMAND_SHOW     = "show";
+    public static final String COMMAND_TAKE     = "take";
+    public static final String COMMAND_QUIT     = "quit";
+
     private String action;
     private Integer[] args;
 
@@ -63,17 +71,25 @@ public class CommandHelper {
 
         CashRegisterInputRegexEnum argsRegex = null;
         switch (action) {
-            case "put":
-            case "take":
+            case COMMAND_CHARGE:
+                argsRegex = CashRegisterInputRegexEnum.COMMAND_6_ARGS;
+                break;
+
+            case COMMAND_EXCHANGE:
+                argsRegex = CashRegisterInputRegexEnum.COMMAND_EXCHANGE;
+                break;
+
+            case COMMAND_PUT:
+            case COMMAND_TAKE:
                 argsRegex = CashRegisterInputRegexEnum.COMMAND_5_ARGS;
                 break;
 
-            case "change":
+            case COMMAND_CHANGE:
                 argsRegex = CashRegisterInputRegexEnum.COMMAND_1_ARG;
                 break;
 
-            case "show":
-            case "quit":
+            case COMMAND_SHOW:
+            case COMMAND_QUIT:
                 argsRegex = CashRegisterInputRegexEnum.COMMAND_NO_ARGS;
                 break;
 

@@ -112,7 +112,7 @@ public class TakeCommandTest extends TestCase {
     }
 
     @Test
-    public void testTakeUnavailableAmount() {
+    public void testTakeNotEnoughCashBack() {
         outContent.reset();
         register.executeCommand("put 1 2 3 4 5");
         assertEquals("$68 1 2 3 4 5\n", outContent.toString());

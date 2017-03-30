@@ -4,6 +4,7 @@ import com.rafael.enumerator.DollarBillEnum;
 import com.rafael.exception.CashRegisterException;
 import com.rafael.helper.CommandHelper;
 
+import java.util.Arrays;
 import java.util.ResourceBundle;
 
 /**
@@ -59,23 +60,31 @@ public class CashRegister {
 
             String output = null;
             switch (commandHelper.getAction()) {
-                case "put":
+                case CommandHelper.COMMAND_PUT:
                     put(commandHelper.getArgs());
 
-                case "show":
+                case CommandHelper.COMMAND_SHOW:
                     output = show();
                     break;
 
-                case "take":
+                case CommandHelper.COMMAND_TAKE:
                     take(commandHelper.getArgs());
                     output = show();
                     break;
 
-                case "change":
+                case CommandHelper.COMMAND_CHANGE:
                     output = change(commandHelper.getArgs());
                     break;
 
-                case "quit":
+                case CommandHelper.COMMAND_CHARGE:
+                    output = charge(commandHelper.getArgs());
+                    break;
+
+                case CommandHelper.COMMAND_EXCHANGE:
+                    output = exchange(commandHelper.getArgs());
+                    break;
+
+                case CommandHelper.COMMAND_QUIT:
                     output = quit();
                     break;
 
@@ -93,11 +102,15 @@ public class CashRegister {
     }
 
     private Integer getTotalCash() {
+        return getTotalCash(billSlots);
+    }
+
+    private Integer getTotalCash(Integer[] array) {
 
         int total = 0;
 
-        for (int i = 0; i < billSlots.length; i++) {
-            total += billSlots[i] * DollarBillEnum.dollarBillEnumArray[i].getDollarBillFactor();
+        for (int i = 0; i < array.length; i++) {
+            total += array[i] * DollarBillEnum.dollarBillEnumArray[i].getAmount();
         }
 
         return total;
@@ -158,12 +171,20 @@ public class CashRegister {
         return getAmountBills(billsChange);
 
     }
-
     private boolean recursiveFindChange(int indexDollarBill, int amountToChange, Integer[] billsChange) {
+        return recursiveFindChange(indexDollarBill, amountToChange, billsChange, null);
+    }
+
+    private boolean recursiveFindChange(int indexDollarBill, int amountToChange, Integer[] billsChange, DollarBillEnum billToExchange) {
 
         boolean foundChange = false;
-        int dollarBill = DollarBillEnum.dollarBillEnumArray[indexDollarBill].getDollarBillFactor();
+        int dollarBill = DollarBillEnum.dollarBillEnumArray[indexDollarBill].getAmount();
         int amountBills = Math.min(billSlots[indexDollarBill], amountToChange / dollarBill);
+
+        // Ignore bill to be exchanged
+        if (DollarBillEnum.dollarBillEnumArray[indexDollarBill] == billToExchange) {
+            amountBills = 0;
+        }
 
         amountToChange -= dollarBill * amountBills;
 
@@ -171,7 +192,7 @@ public class CashRegister {
 
         if (!foundChange && indexDollarBill < billSlots.length - 1) {
 
-            while (!(foundChange = recursiveFindChange(indexDollarBill + 1, amountToChange, billsChange))) {
+            while (!(foundChange = recursiveFindChange(indexDollarBill + 1, amountToChange, billsChange, billToExchange))) {
 
                 // Return one bigger bill to break in smaller bills
                 if (amountBills == 0) {
@@ -186,6 +207,50 @@ public class CashRegister {
         billsChange[indexDollarBill] = amountBills;
 
         return foundChange;
+    }
+
+    private String charge(Integer[] args) throws CashRegisterException {
+
+        int amountToCharge = args[0];
+        Integer[] billsReceived = Arrays.copyOfRange(args, 1, args.length);
+        int amountReceived = getTotalCash(billsReceived);
+        int amountToChange = amountReceived - amountToCharge;
+
+        if (amountReceived < amountToCharge) {
+            throw new CashRegisterException(BUNDLE.getString("cashregister.error.chargemissingmoney"));
+        }
+
+        Integer[] billsChange = getNewBillSlots();
+
+        if (!recursiveFindChange(0, amountToChange, billsChange)){
+            throw new CashRegisterException(BUNDLE.getString("cashregister.error.billnotavailable"));
+        }
+
+        put(billsReceived);
+
+        performWithdraw(billsChange);
+
+        return getAmountBills(billsChange);
+
+    }
+
+    private String exchange(Integer[] args) throws CashRegisterException {
+
+        Integer[] billReceived = args;
+        int amountReceived = getTotalCash(billReceived);
+
+        Integer[] billsChange = getNewBillSlots();
+
+        if (!recursiveFindChange(0, amountReceived, billsChange, DollarBillEnum.get(amountReceived))){
+            throw new CashRegisterException(BUNDLE.getString("cashregister.error.billnotavailable"));
+        }
+
+        put(billReceived);
+
+        performWithdraw(billsChange);
+
+        return getAmountBills(billsChange);
+
     }
 
     private String quit() {

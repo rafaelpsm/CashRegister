@@ -11,7 +11,7 @@ public enum DollarBillEnum {
     BILL_2  (2),
     BILL_1  (1);
 
-    private final int dollarBillFactor;
+    private final int amount;
 
     //Singleton array of dollar bill types
     public static DollarBillEnum[] dollarBillEnumArray = new DollarBillEnum[]{
@@ -22,12 +22,29 @@ public enum DollarBillEnum {
             BILL_1
     };
 
-    DollarBillEnum (int factor) {
-        dollarBillFactor = factor;
+    public static DollarBillEnum get(int amount) {
+
+        if (BILL_20.getAmount() == amount) {
+            return BILL_20;
+        } else if (BILL_10.getAmount() == amount) {
+            return BILL_10;
+        } else if (BILL_5.getAmount() == amount) {
+            return BILL_5;
+        } else if (BILL_2.getAmount() == amount) {
+            return BILL_2;
+        } else if (BILL_1.getAmount() == amount) {
+            return BILL_1;
+        }
+
+        return null;
     }
 
-    public int getDollarBillFactor() {
-        return dollarBillFactor;
+    DollarBillEnum (int factor) {
+        amount = factor;
+    }
+
+    public int getAmount() {
+        return amount;
     }
 
 }

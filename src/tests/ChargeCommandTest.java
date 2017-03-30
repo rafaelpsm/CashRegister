@@ -12,7 +12,7 @@ import java.io.PrintStream;
 /**
  * Created by Rafael on 3/29/17.
  */
-public class ChangeCommandTest extends TestCase {
+public class ChargeCommandTest extends TestCase {
     protected CashRegister register;
 
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -31,86 +31,82 @@ public class ChangeCommandTest extends TestCase {
 
 
     @Test
-    public void testChangeNoArguments() {
+    public void testChargeNoArguments() {
         outContent.reset();
-        register.executeCommand("change");
+        register.executeCommand("charge");
         assertEquals("invalid command\n", outContent.toString());
     }
 
     @Test
-    public void testChangeIncorrectTypeOfArguments() {
+    public void testChargeIncorrectTypeOfArguments() {
         outContent.reset();
-        register.executeCommand("change aa");
+        register.executeCommand("charge a 1 1 0 0 0");
         assertEquals("invalid command\n", outContent.toString());
     }
 
     @Test
-    public void testChangeIncorrectNumberOfArguments() {
+    public void testChargeIncorrectNumberOfArguments() {
         outContent.reset();
-        register.executeCommand("change 1 2 3 4");
+        register.executeCommand("charge 1 2 3 4 5");
         assertEquals("invalid command\n", outContent.toString());
 
         outContent.reset();
-        register.executeCommand("change 1 2");
+        register.executeCommand("charge 1 2 3 4 5 6 7");
         assertEquals("invalid command\n", outContent.toString());
     }
 
     @Test
-    public void testChangeFirstTime() {
+    public void testChargeFirstTime() {
         outContent.reset();
         register.executeCommand("put 1 2 3 4 5");
         assertEquals("$68 1 2 3 4 5\n", outContent.toString());
 
         outContent.reset();
-        register.executeCommand("change 25");
-        assertEquals("1 0 1 0 0\n", outContent.toString());
+        register.executeCommand("charge 25 1 1 0 0 0");
+        assertEquals("0 0 1 0 0\n", outContent.toString());
     }
 
     @Test
-    public void testChangeMultipleTimes() {
+    public void testChargeMultipleTimes() {
         outContent.reset();
-        register.executeCommand("put 1 2 3 4 5");
-        assertEquals("$68 1 2 3 4 5\n", outContent.toString());
+        register.executeCommand("put 1 5 5 5 5");
+        assertEquals("$110 1 5 5 5 5\n", outContent.toString());
 
         outContent.reset();
-        register.executeCommand("change 12");
-        assertEquals("0 1 0 1 0\n", outContent.toString());
+        register.executeCommand("charge 37 2 0 0 0 0");
+        assertEquals("0 0 0 1 1\n", outContent.toString());
         outContent.reset();
         register.executeCommand("show");
-        assertEquals("$56 1 1 3 3 5\n", outContent.toString());
+        assertEquals("$147 3 5 5 4 4\n", outContent.toString());
 
         outContent.reset();
-        register.executeCommand("change 27");
-        assertEquals("1 0 1 1 0\n", outContent.toString());
+        register.executeCommand("charge 17 0 1 2 0 0");
+        assertEquals("0 0 0 1 1\n", outContent.toString());
         outContent.reset();
         register.executeCommand("show");
-        assertEquals("$29 0 1 2 2 5\n", outContent.toString());
+        assertEquals("$164 3 6 7 3 3\n", outContent.toString());
     }
 
     @Test
-    public void testChangeNotEnoughCashBack() {
+    public void testChargeNotEnoughCashReceive() {
         outContent.reset();
-        register.executeCommand("put 1 0 3 4 0");
-        assertEquals("$43 1 0 3 4 0\n", outContent.toString());
+        register.executeCommand("put 1 2 3 1 0");
+        assertEquals("$57 1 2 3 1 0\n", outContent.toString());
 
         outContent.reset();
-        register.executeCommand("change 40");
-        assertEquals("sorry\n", outContent.toString());
+        register.executeCommand("charge 7 0 0 1 0 0");
+        assertEquals("not enough money to charge\n", outContent.toString());
 
     }
 
     @Test
-    public void testChangeNotEnoughCashBackAfterChangeSuccessfull() {
+    public void testChargeNotEnoughCashBack() {
         outContent.reset();
-        register.executeCommand("put 1 0 3 4 0");
-        assertEquals("$43 1 0 3 4 0\n", outContent.toString());
+        register.executeCommand("put 1 2 3 1 0");
+        assertEquals("$57 1 2 3 1 0\n", outContent.toString());
 
         outContent.reset();
-        register.executeCommand("change 11");
-        assertEquals("0 0 1 3 0\n", outContent.toString());
-
-        outContent.reset();
-        register.executeCommand("change 14");
+        register.executeCommand("charge 7 0 1 0 0 0");
         assertEquals("sorry\n", outContent.toString());
 
     }
