@@ -1,6 +1,6 @@
 package com.rafael;
 
-import com.rafael.enumerator.DollarBillEnum;
+import com.rafael.enumerator.BillDenominationEnum;
 import com.rafael.exception.CashRegisterException;
 import com.rafael.helper.CommandHelper;
 
@@ -15,7 +15,7 @@ public class CashRegister {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("MessagesBundle");
 
     //slots contain money bills. E.g.: $20, $10, $5, $2 and $1 use 5 slots
-    private Integer [] billSlots;
+    private Integer [] billDenominations;
 
     // this variable tells if the register is on/off
     private boolean on;
@@ -23,7 +23,7 @@ public class CashRegister {
     public CashRegister() {
 
         //Initialize cash register
-        billSlots = getNewBillSlots();
+        billDenominations = getNewBillSlots();
 
         //Turn cash register on
         on = true;
@@ -35,7 +35,7 @@ public class CashRegister {
 
     private Integer[] getNewBillSlots(){
 
-        Integer[] billsChange = new Integer[DollarBillEnum.dollarBillEnumArray.length];
+        Integer[] billsChange = new Integer[BillDenominationEnum.billDenominationEnumArray.length];
         for (int i = 0; i < billsChange.length; i++) {
             billsChange[i] = 0;
         }
@@ -101,46 +101,83 @@ public class CashRegister {
         return on;
     }
 
-    private Integer getTotalCash() {
-        return getTotalCash(billSlots);
+    // ###########################################################################################################
+
+    /**
+     *
+     * @return The current state of the Cash Register in total and bill denominations
+     */
+    private String show() {
+        return String.format(BUNDLE.getString("cashregister.output.format.currentstate"), getTotalCash(), getCurrentStateBills());
     }
 
+    /**
+     *
+     * @return The total amount in cash
+     */
+    private Integer getTotalCash() {
+        return getTotalCash(billDenominations);
+    }
+
+    /**
+     *
+     * @return The total amount in cash
+     */
     private Integer getTotalCash(Integer[] array) {
 
         int total = 0;
 
         for (int i = 0; i < array.length; i++) {
-            total += array[i] * DollarBillEnum.dollarBillEnumArray[i].getAmount();
+            total += array[i] * BillDenominationEnum.billDenominationEnumArray[i].getAmount();
         }
 
         return total;
     }
 
-    private String getAmountBills() {
-        return getAmountBills(billSlots);
+    /**
+     *
+     * @return A string containing the current state on bill denominations
+     */
+    private String getCurrentStateBills() {
+        return getCurrentStateBills(billDenominations);
     }
 
-    private String getAmountBills(Integer[] array) {
+    /**
+     *
+     * @return A string containing the current state on bill denominations
+     */
+    private String getCurrentStateBills(Integer[] array) {
         return String.format(BUNDLE.getString("cashregister.output.format.billamounts"), (Object[]) array);
     }
 
-    private String show() {
-        return String.format(BUNDLE.getString("cashregister.output.format.currentstate"), getTotalCash(), getAmountBills());
-    }
+    // ###########################################################################################################
 
+    /**
+     * This method adds bill denomination into the Cash Register
+     *
+     * @param args Bill denominations to be added
+     */
     private void put(Integer[] args) {
 
-        for (int i = 0; i < billSlots.length; i++) {
-            billSlots[i] += args[i];
+        for (int i = 0; i < billDenominations.length; i++) {
+            billDenominations[i] += args[i];
         }
     }
 
+    // ###########################################################################################################
+
+    /**
+     * This method take bill denominations from the Cash Register
+     *
+     * @param args Bill denominations to be taken
+     * @throws CashRegisterException if there is not enough bills
+     */
     private void take(Integer[] args) throws CashRegisterException {
 
         Integer[] billsTake = getNewBillSlots();
 
         for (int i = 0; i < billsTake.length; i++) {
-            if (billSlots[i] < args[i]) {
+            if (billDenominations[i] < args[i]) {
                 throw new CashRegisterException(BUNDLE.getString("cashregister.error.billnotavailable"));
             }
             billsTake[i] = args[i];
@@ -150,13 +187,27 @@ public class CashRegister {
 
     }
 
-    private void performWithdraw(Integer[] args) throws CashRegisterException {
-        for (int i = 0; i < billSlots.length; i++) {
-            billSlots[i] -= args[i];
+    /**
+     * This method perform a withdraw of bill denominations from the Cash Register
+     *
+     * @param args Bill denominations to be taken
+     */
+    private void performWithdraw(Integer[] args) {
+        for (int i = 0; i < billDenominations.length; i++) {
+            billDenominations[i] -= args[i];
         }
 
     }
 
+    // ###########################################################################################################
+
+    /**
+     * This method calculates the change to be return to the customer.
+     *
+     * @param args the amount to be changed
+     * @return the bill denominations chenged
+     * @throws CashRegisterException if there are not enough bills
+     */
     private String change(Integer[] args) throws CashRegisterException {
 
         int amountToChange = args[0];
@@ -168,21 +219,22 @@ public class CashRegister {
 
         performWithdraw(billsChange);
 
-        return getAmountBills(billsChange);
+        return getCurrentStateBills(billsChange);
 
     }
+
     private boolean recursiveFindChange(int indexDollarBill, int amountToChange, Integer[] billsChange) {
         return recursiveFindChange(indexDollarBill, amountToChange, billsChange, null);
     }
 
-    private boolean recursiveFindChange(int indexDollarBill, int amountToChange, Integer[] billsChange, DollarBillEnum billToExchange) {
+    private boolean recursiveFindChange(int indexDollarBill, int amountToChange, Integer[] billsChange, BillDenominationEnum billToExchange) {
 
         boolean foundChange = false;
-        int dollarBill = DollarBillEnum.dollarBillEnumArray[indexDollarBill].getAmount();
-        int amountBills = Math.min(billSlots[indexDollarBill], amountToChange / dollarBill);
+        int dollarBill = BillDenominationEnum.billDenominationEnumArray[indexDollarBill].getAmount();
+        int amountBills = Math.min(billDenominations[indexDollarBill], amountToChange / dollarBill);
 
         // Ignore bill to be exchanged
-        if (DollarBillEnum.dollarBillEnumArray[indexDollarBill] == billToExchange) {
+        if (BillDenominationEnum.billDenominationEnumArray[indexDollarBill] == billToExchange) {
             amountBills = 0;
         }
 
@@ -190,7 +242,7 @@ public class CashRegister {
 
         foundChange = (amountToChange == 0);
 
-        if (!foundChange && indexDollarBill < billSlots.length - 1) {
+        if (!foundChange && indexDollarBill < billDenominations.length - 1) {
 
             while (!(foundChange = recursiveFindChange(indexDollarBill + 1, amountToChange, billsChange, billToExchange))) {
 
@@ -209,6 +261,16 @@ public class CashRegister {
         return foundChange;
     }
 
+    // ###########################################################################################################
+
+    /**
+     * This method charge the customer a certain amount based on the receiving amount of money
+     * and give back the change.
+     *
+     * @param args The amount to charge and the bill denominations received
+     * @return the change
+     * @throws CashRegisterException if there are not enough bills for the change
+     */
     private String charge(Integer[] args) throws CashRegisterException {
 
         int amountToCharge = args[0];
@@ -230,10 +292,19 @@ public class CashRegister {
 
         performWithdraw(billsChange);
 
-        return getAmountBills(billsChange);
+        return getCurrentStateBills(billsChange);
 
     }
 
+    // ###########################################################################################################
+
+    /**
+     * This method perform an exchange of money, breaking a bill denominations into smaller value bills.
+     *
+     * @param args The amount to charge and the bill denominations received
+     * @return the change
+     * @throws CashRegisterException if there are not enough bills for the change
+     */
     private String exchange(Integer[] args) throws CashRegisterException {
 
         Integer[] billReceived = args;
@@ -241,7 +312,7 @@ public class CashRegister {
 
         Integer[] billsChange = getNewBillSlots();
 
-        if (!recursiveFindChange(0, amountReceived, billsChange, DollarBillEnum.get(amountReceived))){
+        if (!recursiveFindChange(0, amountReceived, billsChange, BillDenominationEnum.get(amountReceived))){
             throw new CashRegisterException(BUNDLE.getString("cashregister.error.billnotavailable"));
         }
 
@@ -249,10 +320,17 @@ public class CashRegister {
 
         performWithdraw(billsChange);
 
-        return getAmountBills(billsChange);
+        return getCurrentStateBills(billsChange);
 
     }
 
+    // ###########################################################################################################
+
+    /**
+     * This method should turn off the Cash Register
+     *
+     * @return whether the Cash Register is on or off
+     */
     private String quit() {
         on = false;
 

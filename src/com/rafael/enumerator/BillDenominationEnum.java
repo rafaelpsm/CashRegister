@@ -3,7 +3,7 @@ package com.rafael.enumerator;
 /**
  * Created by Rafael on 3/29/17.
  */
-public enum DollarBillEnum {
+public enum BillDenominationEnum {
 
     BILL_20 (20),
     BILL_10 (10),
@@ -14,7 +14,7 @@ public enum DollarBillEnum {
     private final int amount;
 
     //Singleton array of dollar bill types
-    public static DollarBillEnum[] dollarBillEnumArray = new DollarBillEnum[]{
+    public static BillDenominationEnum[] billDenominationEnumArray = new BillDenominationEnum[]{
             BILL_20,
             BILL_10,
             BILL_5,
@@ -22,7 +22,7 @@ public enum DollarBillEnum {
             BILL_1
     };
 
-    public static DollarBillEnum get(int amount) {
+    public static BillDenominationEnum get(int amount) {
 
         if (BILL_20.getAmount() == amount) {
             return BILL_20;
@@ -39,7 +39,7 @@ public enum DollarBillEnum {
         return null;
     }
 
-    DollarBillEnum (int factor) {
+    BillDenominationEnum(int factor) {
         amount = factor;
     }
 
