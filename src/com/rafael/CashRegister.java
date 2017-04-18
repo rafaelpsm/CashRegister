@@ -60,31 +60,31 @@ public class CashRegister {
 
             String output = null;
             switch (commandHelper.getAction()) {
-                case CommandHelper.COMMAND_PUT:
+                case COMMAND_PUT:
                     put(commandHelper.getArgs());
 
-                case CommandHelper.COMMAND_SHOW:
+                case COMMAND_SHOW:
                     output = show();
                     break;
 
-                case CommandHelper.COMMAND_TAKE:
+                case COMMAND_TAKE:
                     take(commandHelper.getArgs());
                     output = show();
                     break;
 
-                case CommandHelper.COMMAND_CHANGE:
+                case COMMAND_CHANGE:
                     output = change(commandHelper.getArgs());
                     break;
 
-                case CommandHelper.COMMAND_CHARGE:
+                case COMMAND_CHARGE:
                     output = charge(commandHelper.getArgs());
                     break;
 
-                case CommandHelper.COMMAND_EXCHANGE:
+                case COMMAND_EXCHANGE:
                     output = exchange(commandHelper.getArgs());
                     break;
 
-                case CommandHelper.COMMAND_QUIT:
+                case COMMAND_QUIT:
                     output = quit();
                     break;
 

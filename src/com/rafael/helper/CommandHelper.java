@@ -1,5 +1,6 @@
 package com.rafael.helper;
 
+import com.rafael.enumerator.ActionEnum;
 import com.rafael.enumerator.CashRegisterInputRegexEnum;
 import com.rafael.exception.CashRegisterException;
 
@@ -13,15 +14,7 @@ public class CommandHelper {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("MessagesBundle");
     private static final String DELIMITER_SPACE = " ";
 
-    public static final String COMMAND_CHANGE   = "change";
-    public static final String COMMAND_CHARGE   = "charge";
-    public static final String COMMAND_EXCHANGE = "exchange";
-    public static final String COMMAND_PUT      = "put";
-    public static final String COMMAND_SHOW     = "show";
-    public static final String COMMAND_TAKE     = "take";
-    public static final String COMMAND_QUIT     = "quit";
-
-    private String action;
+    private ActionEnum action;
     private Integer[] args;
 
     protected String commandLine;
@@ -30,21 +23,21 @@ public class CommandHelper {
 
         this.commandLine = commandLine;
 
+        // Break arguments
+        String[] args = commandLine.split(DELIMITER_SPACE);
+
+        this.action = ActionEnum.get(args[0]);
+
         //Validate command line
         if (!this.isCommandLineValid()) {
             return;
         }
 
-        // Break arguments
-        String[] args = commandLine.split(DELIMITER_SPACE);
-
-        this.setAction(args[0]);
-
         Integer[] commandArgs = new Integer[args.length - 1];
         for (int i = 1; i < args.length; i++) {
             commandArgs[i - 1] = new Integer(args[i]);
         }
-        this.setArgs(commandArgs);
+        this.args = commandArgs;
 
     }
 
@@ -63,14 +56,9 @@ public class CommandHelper {
 
         }
 
-        // Extract action
-        String action = commandLine;
-        if (commandLine.indexOf(DELIMITER_SPACE) > 0) {
-            action = commandLine.substring(0, commandLine.indexOf(DELIMITER_SPACE));
-        }
-
         CashRegisterInputRegexEnum argsRegex = null;
-        switch (action) {
+
+        switch (this.action) {
             case COMMAND_CHARGE:
                 argsRegex = CashRegisterInputRegexEnum.COMMAND_6_ARGS;
                 break;
@@ -118,20 +106,12 @@ public class CommandHelper {
 
     }
 
-    public String getAction() {
+    public ActionEnum getAction() {
         return action;
-    }
-
-    public void setAction(String action) {
-        this.action = action;
     }
 
     public Integer[] getArgs() {
         return args;
-    }
-
-    public void setArgs(Integer[] args) {
-        this.args = args;
     }
 
 }
